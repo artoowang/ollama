@@ -356,6 +356,7 @@ func (s *Server) removeSequence(seqIndex int, reason llm.DoneReason) {
 }
 
 func (s *Server) run(ctx context.Context) {
+	// The loadModel function calls s.ready.Done() when it's finished, which unblocks this Wait().
 	s.ready.Wait()
 
 	// Logically these batches are used only within the context of processBatch
@@ -364,8 +365,13 @@ func (s *Server) run(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
+	// Ensures this C++ memory is released when the run function exits, preventing memory leaks.
 	defer tokenBatch.Free()
 
+	// This section pre-allocates a second, separate batch specifically for multimodal models that
+	// process image embeddings. If the model is not multimodal (embedBatchSize == 0), it just uses
+	// an empty struct. This is an optimization to avoid re-allocating memory on every single loop
+	// iteration.
 	var embedBatch *llama.Batch
 	embedBatchSize := s.image.BatchSize(s.batchSize)
 	if embedBatchSize != 0 {
@@ -379,10 +385,16 @@ func (s *Server) run(ctx context.Context) {
 	}
 
 	for {
+		// This select block is how Go handles concurrency gracefully.
 		select {
 		case <-ctx.Done():
+			// Checks if a cancellation signal has been received on the context. If so, it
+			// returns, cleanly exiting the run loop and shutting down the goroutine.
 			return
 		default:
+			// If no cancellation is pending, it proceeds with the default case, which is to process
+			// a batch. The `tokenBatch` and `embedBatch` are reused across iterations for
+			// efficiency: they are not input data.
 			err := s.processBatch(tokenBatch, embedBatch)
 			if err != nil {
 				panic(err)
@@ -394,6 +406,9 @@ func (s *Server) run(ctx context.Context) {
 	}
 }
 
+// Gathers inputs from all active user requests (sequences), puts them into a single batch, sends
+// that batch to llama.cpp for inference, and then processes the results.
+//
 // TODO (jmorganca): processBatch should be simplified, removing:
 // * sampling
 // * stop token checking
@@ -402,15 +417,22 @@ func (s *Server) run(ctx context.Context) {
 // it should only be responsible for accepting tokens or embeddings and
 // processing batches as fast as possible
 func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) error {
+	// s.seqs: list of active sequences, protected by s.mu. It is interesting that we lock first,
+	// and then wait for s.cond (which indicates user input). This probably means a thread calling
+	// processBatch() is picked (by locking) before the user input arrives.
 	s.mu.Lock()
 	for s.allNil() {
 		s.cond.Wait() // Wait until an item is added
 	}
+	// Unlocks when we exit the function.
 	defer s.mu.Unlock()
 
+	// This points to either tokenBatch or embedBatch depending on the input type being processed.
 	var batch *llama.Batch
 	var numOutputs int
 
+	// `s.nextSeq` is the ID of the next sequence to process. Subtract 1 since we will immediately
+	// add 1 at the beginning of the loop.
 	seqIdx := s.nextSeq - 1
 	for range s.seqs {
 		seqIdx = (seqIdx + 1) % len(s.seqs)
@@ -426,7 +448,11 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 			continue
 		}
 
+		// I think the purpose of this loop is to fill up the batch with inputs from the sequence.
+		// It should fill up either the `tokenBatch` or `embedBatch` for each sequence, but not
+		// both.
 		for i, input := range seq.inputs {
+			// Checks if adding another token would exceed the model's context window (numCtx).
 			if len(seq.cache.Inputs)+len(seq.pendingInputs)+1 > s.cache.numCtx {
 				if len(seq.pendingInputs) == 0 {
 					if !seq.shift {
@@ -451,6 +477,7 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 				}
 			}
 
+			// I think this is used for multimodal inputs, like image embeddings.
 			embedding := input.embed != nil
 
 			// If we don't currently have a batch, use one of the correct type and
@@ -464,6 +491,9 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 					batch = embedBatch
 				}
 			} else if embedding != batch.IsEmbedding() {
+				// If the batch type is different from the input, break the loop. The currently
+				// filled batch will be processed, and the other input type will be picked up on the
+				// next processBatch call.
 				s.nextSeq = seqIdx
 				break
 			}
@@ -488,6 +518,9 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 	if batch == nil || batch.NumTokens() == 0 {
 		return nil
 	}
+
+	// At this point, we should have batch filled with inputs of a single type (either tokens or
+	// embeddings).
 
 	t := time.Now()
 	if err := s.lc.Decode(batch); err != nil {
@@ -560,6 +593,7 @@ func (s *Server) processBatch(tokenBatch *llama.Batch, embedBatch *llama.Batch) 
 			}
 		}
 
+		// This is where the generated token is appended back to the sequence.
 		seq.inputs = []input{{token: token}}
 
 		seq.pendingResponses = append(seq.pendingResponses, piece)
