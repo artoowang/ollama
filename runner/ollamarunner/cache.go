@@ -139,8 +139,8 @@ func (c *InputCache) LoadCacheSlot(prompt []*input.Input, cachePrompt bool) (*In
 		}
 	}
 
-	slog.Debug("loading cache slot", "id", slot.Id, "cache", len(slot.Inputs), "prompt", len(prompt),
-		"used", numPast, "remaining", int32(len(prompt))-numPast)
+	slog.Debug("loading cache slot", "id", slot.Id, "cache_tokens", len(slot.Inputs), "prompt_tokens", len(prompt),
+		"cache_hit_tokens", numPast, "remaining_tokens", int32(len(prompt))-numPast)
 
 	slot.Inputs = prompt[:numPast]
 	prompt = prompt[numPast:]
