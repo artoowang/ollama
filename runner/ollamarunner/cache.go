@@ -29,6 +29,8 @@ type InputCache struct {
 	multiUserCache bool
 
 	cache kvcache.Cache
+
+	model model.Model
 }
 
 func NewInputCache(model model.Model, kvCacheType string, kvSize int32, numSlots int, batchSize int, multiUserCache bool) (*InputCache, error) {
@@ -55,6 +57,7 @@ func NewInputCache(model model.Model, kvCacheType string, kvSize int32, numSlots
 		slots:          slots,
 		multiUserCache: multiUserCache,
 		cache:          cache,
+		model:          model,
 	}, nil
 }
 
@@ -141,6 +144,28 @@ func (c *InputCache) LoadCacheSlot(prompt []*input.Input, cachePrompt bool) (*In
 
 	slog.Debug("loading cache slot", "id", slot.Id, "cache_tokens", len(slot.Inputs), "prompt_tokens", len(prompt),
 		"cache_hit_tokens", numPast, "remaining_tokens", int32(len(prompt))-numPast)
+
+	// Print the last few tokens to show what in the cache is matched.
+	if numPast > 0 {
+		if tp, ok := c.model.(model.TextProcessor); ok {
+			var numTokensToPrint int32 = 10
+			start := numPast - numTokensToPrint
+			if start < 0 {
+				start = 0
+			}
+
+			var tokens []int32
+			for _, i := range prompt[start:numPast] {
+				tokens = append(tokens, i.Token)
+			}
+
+			if s, err := tp.Decode(tokens); err == nil {
+				slog.Debug("last tokens in cache hit", "text", s)
+			} else {
+				slog.Debug("failed to decode last tokens in cache hit", "err", err)
+			}
+		}
+	}
 
 	slot.Inputs = prompt[:numPast]
 	prompt = prompt[numPast:]
