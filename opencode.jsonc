@@ -24,6 +24,8 @@
       "cat *": "allow",
       "grep *": "allow",
       "sed *": "allow",
+      "tail *": "allow",
+      "tr *": "allow",
     },
   }
 }
