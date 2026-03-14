@@ -59,7 +59,7 @@ main() {
     curl -s -X POST "http://${HOST}/api/generate" \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg model "$MODEL" --arg prompt "$PROMPT_CONTENT" \
-              '{model: $model, prompt: $prompt, stream: false}')"
+              '{model: $model, prompt: $prompt, stream: false, raw: true}')"
 }
 
 main "$@"
