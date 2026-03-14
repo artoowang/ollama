@@ -1,0 +1,61 @@
+<|im_start|>system
+# Tools
+
+You have access to the following functions:
+
+<tools>
+{"type": "function", "function": {"name": "assist__HassTurnOn", "description": "Turns on/opens/presses a device or entity. For locks, this performs a 'lock' action. Use for requests like 'turn on', 'activate', 'enable', or 'lock'.", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassTurnOff", "description": "Turns off/closes a device or entity. For locks, this performs an 'unlock' action. Use for requests like 'turn off', 'deactivate', 'disable', or 'unlock'.", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassStartTimer", "description": "Starts a new timer. If user does not specify a timer name, use the length of the timer as the name (e.g., "1 minute timer").", "parameters": {"type": "object", "properties": {"hours": {"type": "integer"}, "minutes": {"type": "integer"}, "name": {"type": "string"}, "seconds": {"type": "integer"}}}}}
+{"type": "function", "function": {"name": "assist__HassCancelTimer", "description": "Cancels a timer. If the user does not specify which timer, use their current area.", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassCancelAllTimers", "description": "Cancels all timers", "parameters": {"type": "object", "properties": {"area": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassIncreaseTimer", "description": "Adds more time to a timer", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "hours": {"type": "integer"}, "minutes": {"type": "integer"}, "name": {"type": "string"}, "seconds": {"type": "integer"}, "start_hours": {"type": "integer"}, "start_minutes": {"type": "integer"}, "start_seconds": {"type": "integer"}}}}}
+{"type": "function", "function": {"name": "assist__HassDecreaseTimer", "description": "Removes time from a timer", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "hours": {"type": "integer"}, "minutes": {"type": "integer"}, "name": {"type": "string"}, "seconds": {"type": "integer"}, "start_hours": {"type": "integer"}, "start_minutes": {"type": "integer"}, "start_seconds": {"type": "integer"}}}}}
+{"type": "function", "function": {"name": "assist__HassPauseTimer", "description": "Pauses a running timer", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "name": {"type": "string"}, "start_hours": {"type": "integer"}, "start_minutes": {"type": "integer"}, "start_seconds": {"type": "integer"}}}}}
+{"type": "function", "function": {"name": "assist__HassUnpauseTimer", "description": "Resumes a paused timer", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "name": {"type": "string"}, "start_hours": {"type": "integer"}, "start_minutes": {"type": "integer"}, "start_seconds": {"type": "integer"}}}}}
+{"type": "function", "function": {"name": "assist__HassTimerStatus", "description": "Reports the current status of timers", "parameters": {"type": "object", "properties": {}}}}
+{"type": "function", "function": {"name": "assist__HassBroadcast", "description": "Broadcast a message through the home", "parameters": {"type": "object", "required": ["message"], "properties": {"message": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassMediaUnpause", "description": "Resumes a media player", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "device_class": {"type": "array", "items": {"enum": ["receiver", "speaker", "tv"], "type": "string"}}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassMediaPause", "description": "Pauses a media player", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "device_class": {"type": "array", "items": {"enum": ["receiver", "speaker", "tv"], "type": "string"}}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassMediaNext", "description": "Skips a media player to the next item", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "device_class": {"type": "array", "items": {"enum": ["receiver", "speaker", "tv"], "type": "string"}}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassMediaPrevious", "description": "Replays the previous item for a media player", "parameters": {"type": "object", "properties": {"area": {"type": "string"}, "device_class": {"type": "array", "items": {"enum": ["receiver", "speaker", "tv"], "type": "string"}}, "floor": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassSetVolume", "description": "Sets the volume percentage of a media player", "parameters": {"type": "object", "required": ["volume_level"], "properties": {"area": {"type": "string"}, "device_class": {"type": "array", "items": {"enum": ["receiver", "speaker", "tv"], "type": "string"}}, "floor": {"type": "string"}, "name": {"type": "string"}, "volume_level": {"type": "integer", "description": "The volume percentage of the media player"}}}}}
+{"type": "function", "function": {"name": "assist__HassSetVolumeRelative", "description": "Increases or decreases the volume of a media player", "parameters": {"type": "object", "required": ["volume_step"], "properties": {"area": {"type": "string"}, "floor": {"type": "string"}, "name": {"type": "string"}, "volume_step": {}}}}}
+{"type": "function", "function": {"name": "assist__HassMediaSearchAndPlay", "description": "Searches for media and plays the first result", "parameters": {"type": "object", "required": ["search_query"], "properties": {"area": {"type": "string"}, "floor": {"type": "string"}, "media_class": {"type": "string", "enum": ["album", "app", "artist", "channel", "composer", "contributing_artist", "directory", "episode", "game", "genre", "image", "movie", "music", "playlist", "podcast", "season", "track", "tv_show", "url", "video"]}, "name": {"type": "string"}, "search_query": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassListAddItem", "description": "Add item to a todo list", "parameters": {"type": "object", "required": ["item", "name"], "properties": {"item": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__HassListCompleteItem", "description": "Complete item on a todo list", "parameters": {"type": "object", "required": ["item", "name"], "properties": {"item": {"type": "string"}, "name": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "assist__todo_get_items", "description": "Query a to-do list to find out what items are on it. Use this to answer questions like 'What's on my task list?' or 'Read my grocery list'. Filters items by status (needs_action, completed, all).", "parameters": {"type": "object", "required": ["todo_list"], "properties": {"status": {"type": "string", "description": "Filter returned items by status, by default returns incomplete items", "enum": ["needs_action", "completed", "all"]}, "todo_list": {"type": "string", "enum": ["To-do"]}}}}}
+{"type": "function", "function": {"name": "assist__get_current_weather", "description": "Use this when the user asks the current weather outside.", "parameters": {"type": "object", "properties": {}}}}
+{"type": "function", "function": {"name": "assist__get_weather_forecast", "description": "Use this when the user asks the weather today or in the future", "parameters": {"type": "object", "properties": {"forecast_type": {"type": "string", "enum": ["daily", "hourly"]}}}}}
+{"type": "function", "function": {"name": "assist__GetLiveContext", "description": "Provides real-time information about the CURRENT state, value, or mode of devices, sensors, entities, or areas. Use this tool for: 1. Answering questions about current conditions (e.g., 'Is the light on?'). 2. As the first step in conditional actions (e.g., 'If the weather is rainy, turn off sprinklers' requires checking the weather first).", "parameters": {"type": "object", "properties": {}}}}
+{"type": "function", "function": {"name": "ollama-tools__internet_search", "description": "Searches the internet for a given query. Summarize each result entry with one sentence max. Do not include source.", "parameters": {"type": "object", "required": ["query"], "properties": {"query": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "ollama-tools__camera_snapshot", "description": "Takes a snapshot from a camera.", "parameters": {"type": "object", "required": ["entity_id"], "properties": {"entity_id": {"type": "string"}}}}}
+{"type": "function", "function": {"name": "ollama-tools__get_assist_session_info", "description": "Gets current session information including date, time, device, area, and timer support", "parameters": {"type": "object", "properties": {}}}}
+</tools>
+
+If you choose to call a function ONLY reply in the following format with NO suffix:
+
+<tool_call>
+<function=example_function_name>
+<parameter=example_parameter_1>
+value_1
+</parameter>
+<parameter=example_parameter_2>
+This is the value for the second parameter
+that can span
+multiple lines
+</parameter>
+</function>
+</tool_call>
+
+<IMPORTANT>
+Reminder:
+- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags
+- Required parameters MUST be specified
+- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after
+- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls
+</IMPORTANT><|im_end|>
+<|im_start|>user
+hi<|im_end|>
+<|im_start|>assistant
+<think>
