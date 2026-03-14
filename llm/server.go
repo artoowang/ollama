@@ -1533,8 +1533,9 @@ type CompletionResponse struct {
 }
 
 func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn func(CompletionResponse)) error {
-	slog.Debug("completion request", "images", len(req.Images), "prompt", len(req.Prompt), "format", string(req.Format))
-	logutil.Trace("completion request", "prompt", req.Prompt)
+	// TODO: Make prompt print in DEBUG.
+	slog.Debug("completion request", "images", len(req.Images), "len(prompt)", len(req.Prompt), "format", string(req.Format), "prompt", req.Prompt)
+	// logutil.Trace("completion request", "prompt", req.Prompt)
 
 	if len(req.Format) > 0 {
 		switch string(req.Format) {
