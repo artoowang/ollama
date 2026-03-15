@@ -13,7 +13,9 @@ import (
 const (
 	DefaultCheckpointCount    = 24
 	DefaultCheckpointMinPos   = int32(16)
-	DefaultCheckpointInterval = int32(1664)
+	// TODO: This is reduced from 1664 to just 300, in order to maximize the cache hit for Home
+	// Assistant requests. Not sure what the downside of this is.
+	DefaultCheckpointInterval = int32(300)
 )
 
 var ErrInvalidRecurrentShape = errors.New("kvcache: invalid recurrent state shape")
