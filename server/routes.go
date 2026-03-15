@@ -582,6 +582,15 @@ func (s *Server) GenerateHandler(c *gin.Context) {
 				res.TotalDuration = time.Since(checkpointStart)
 				res.LoadDuration = checkpointLoaded.Sub(checkpointStart)
 
+				slog.Info("generate metrics",
+					"prompt_eval_count", cr.PromptEvalCount,
+					"prompt_eval_duration", cr.PromptEvalDuration,
+					"eval_count", cr.EvalCount,
+					"eval_duration", cr.EvalDuration,
+					"total_duration", res.TotalDuration,
+					"load_duration", res.LoadDuration,
+				)
+
 				if !req.Raw {
 					tokens, err := r.Tokenize(c.Request.Context(), prompt+sb.String())
 					if err != nil {
@@ -2312,6 +2321,15 @@ func (s *Server) ChatHandler(c *gin.Context) {
 					res.DoneReason = r.DoneReason.String()
 					res.TotalDuration = time.Since(checkpointStart)
 					res.LoadDuration = checkpointLoaded.Sub(checkpointStart)
+
+					slog.Info("chat metrics",
+						"prompt_eval_count", r.PromptEvalCount,
+						"prompt_eval_duration", r.PromptEvalDuration,
+						"eval_count", r.EvalCount,
+						"eval_duration", r.EvalDuration,
+						"total_duration", res.TotalDuration,
+						"load_duration", res.LoadDuration,
+					)
 				}
 
 				if builtinParser != nil {
