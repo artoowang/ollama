@@ -22,10 +22,15 @@
       "*": "ask",
       "ls *": "allow",
       "cat *": "allow",
+      "git log *": "allow",
+      "git ls-tree *": "allow",
+      "git show *": "allow",
       "grep *": "allow",
+      "head *": "allow",
       "sed *": "allow",
       "tail *": "allow",
       "tr *": "allow",
+      "xargs *": "allow",
     },
   }
 }
