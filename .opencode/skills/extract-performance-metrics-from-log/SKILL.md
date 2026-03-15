@@ -13,16 +13,25 @@ triggers:
 
 ## Workflow
 
-1. Ask for the location of the Ollama log file. The default is /tmp/log.
+1. Ask for the location of the Ollama log file. The default is /Users/ollama/log/ollama.err.log
+   It is under the user ollama. Don't replace that with the current user.
 1. The log file contains very long lines. Use the following command to fold those lines before parsing:
     ```shell
     fold -s -w 1000 <log_file> > <output_file>
     ```
-1. Find the recent "completion request" in the log. Ask which request to analyze.
-1. The cache performance is affected by the previous request, so given a "completion request" to analyze, we calso need to look at the request before it.
-1. There shouuld be one "loading cache slot" immediately after each request, which shows the cache performance of the said request. It shows 4 metrics:
-    * cache_tokens: The current number of tokens in the cache (from the previous request).
-    * prompt_tokens: The number of tokens in the request's prompt.
-    * cache_hit_tokens: The number of tokens in the prompt that hits the cache.
-    * remaining_tokens: The number of tokens in the prompt that misses the cache.
-1. The cache_hit_tokens should be high, and remaining_tokens should be low. If that is not the case, compare the "prompt" strings in both requests, and see where the strings start to differ.
+1. Find all requests in the log. Each request should come with a group of the following messages:
+    * completion request: it includes the following fields:
+        * len(prompt): the number of tokens in the prompt.
+        * prompt: the full prompt string.
+    * loading cache slot: it includes the following fields:
+        * cache_tokens: The current number of tokens in the cache (from the previous request).
+        * prompt_tokens: The number of tokens in the request's prompt.
+        * cache_hit_tokens: The number of tokens in the prompt that hits the cache.
+        * remaining_tokens: The number of tokens in the prompt that misses the cache.
+    * chat metrics: it includes the following fields:
+        * prompt_eval_count: The number of tokens in the prompt.
+        * prompt_eval_duration: The time spent to evalute the prompt. The better the cache hit above, the shorter the evaluation should be.
+        * eval_count: The number of response tokens generated.
+        * eval_duration: The time spent to generate the response tokens. eval_count / eval_duration gives us the token generation speed.
+        * total_duration: The total time spent to handle this request, including prompt_eval_duration and eval_duration.
+        * load_duration: The time spent to load the model. If the model is already in the memory, this should be quick.

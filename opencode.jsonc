@@ -12,13 +12,23 @@
         "list": "allow",
         "read": "allow",
         "todowrite": "allow",
+        "webfetch": "allow",
         "websearch": "allow",
+
+        // -------------------------------------------------------------------------
+        // Skills.
+
+        "skill": {
+            "*": "ask",
+            "analyze-cache-performance": "allow",
+            "extract-performance-metrics-from-log": "allow",
+        },
 
         // -------------------------------------------------------------------------
         // Allowed external directories.
 
         "external_directory": {
-            "/tmp": "allow",
+            "/tmp/**": "allow",
         },
 
         // -------------------------------------------------------------------------
@@ -31,6 +41,8 @@
             "*": "ask",
             "ls *": "allow",
             "cat *": "allow",
+            "echo *": "allow",
+            "fold *": "allow",
             "git log *": "allow",
             "git ls-tree *": "allow",
             "git show *": "allow",
