@@ -38,8 +38,8 @@ where the "<prompt_content>" is from a given file. Proper encoding should be don
 ### Usage Examples
 
 ```bash
-./scripts/generate_from_prompt.sh prompt.txt
-./scripts/generate_from_prompt.sh prompt.txt llama3.2 localhost:11434
+./scripts/generate_from_prompt.sh -p prompt.txt
+./scripts/generate_from_prompt.sh -p prompt.txt -m llama3.2 -H localhost:11434
 ```
 
 ### Command Structure
